@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 from plainspeak import Simplifier, grade_level, redact_pii
 
 SAMPLE = """NOTICE OF BENEFITS REDETERMINATION

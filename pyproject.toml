@@ -49,3 +49,6 @@ Issues = "https://github.com/MukundaKatta/plainspeak/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/plainspeak"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/plainspeak/py.typed" = "plainspeak/py.typed"

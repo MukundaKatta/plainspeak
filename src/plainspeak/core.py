@@ -105,11 +105,23 @@ def find_dates(text: str) -> list[str]:
 
 @dataclass
 class ActionItem:
+    """One thing the reader has to do, with an optional attached deadline.
+
+    ``due`` is the first date found in the same sentence, or ``None`` when the
+    action has no explicit deadline.
+    """
+
     text: str
     due: str | None = None
 
 
 def extract_actions(text: str) -> list[ActionItem]:
+    """Pull the sentences that ask the reader to act and attach a deadline.
+
+    A sentence is treated as an action when it contains one of a small set of
+    cue words ("must", "submit", "contact", …). The first date in the sentence,
+    if any, becomes that action's ``due`` value.
+    """
     items: list[ActionItem] = []
     for sentence in _split_sentences(text):
         low = sentence.lower()
@@ -124,6 +136,12 @@ def extract_actions(text: str) -> list[ActionItem]:
 
 @dataclass
 class SimplifyResult:
+    """The full output of :meth:`Simplifier.simplify`.
+
+    Carries the plain rewrite, the extracted action checklist and key dates,
+    before/after reading grades, and a count of how much PII was redacted.
+    """
+
     plain_summary: str
     action_items: list[ActionItem]
     key_dates: list[str]
@@ -137,9 +155,11 @@ class SimplifyResult:
 
     @property
     def grade_drop(self) -> float:
+        """How many grade levels easier the rewrite reads (original minus simplified)."""
         return round(self.original_grade - self.simplified_grade, 1)
 
     def to_dict(self) -> dict:
+        """Return a plain dict of every field plus the derived ``grade_drop``."""
         d = asdict(self)
         d["grade_drop"] = self.grade_drop
         return d
@@ -166,6 +186,13 @@ class Simplifier:
         reading_level: str | None = None,
         language: str | None = None,
     ) -> SimplifyResult:
+        """Redact, rewrite, and analyze ``text``.
+
+        PII is stripped first (unless ``redact=False``) so the backend only ever
+        sees placeholder tokens. ``reading_level`` and ``language`` override the
+        instance defaults for this one call. Returns a :class:`SimplifyResult`
+        and, if ``audit_path`` is set, appends one privacy-safe JSONL line.
+        """
         level = reading_level or self.reading_level
         lang = language or self.language
 

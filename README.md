@@ -6,9 +6,10 @@ plain language, a checklist of what you actually have to **do**, and the
 whole thing runs offline with a keyless deterministic backend, so you can try it
 in seconds with no API key.
 
+[![CI](https://github.com/MukundaKatta/plainspeak/actions/workflows/ci.yml/badge.svg)](https://github.com/MukundaKatta/plainspeak/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-pytest-blueviolet.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-unittest-blueviolet.svg)](tests/)
 
 ---
 
@@ -117,14 +118,36 @@ Simplifier(audit_path="audit.jsonl").simplify(letter_text)
 # {"ts":..., "backend":"stub", "redactions":3, "grade_drop":7.4, "action_items":3, ...}
 ```
 
+## API
+
+`from plainspeak import ...`
+
+| Object | Kind | What it does |
+| ------ | ---- | ------------ |
+| `Simplifier(backend=StubBackend(), reading_level="grade-6", redact=True, audit_path=None)` | class | Configure once, reuse. Call `.simplify(text)` for a `SimplifyResult`. |
+| `Simplifier.simplify(text, *, reading_level=None, language=None)` | method | Redact PII, rewrite, extract actions and dates, score reading grade. |
+| `SimplifyResult` | dataclass | `plain_summary`, `action_items`, `key_dates`, `original_grade`, `simplified_grade`, `grade_drop`, `redactions`, … plus `.to_dict()`. |
+| `ActionItem(text, due=None)` | dataclass | One thing to do, with an optional attached deadline. |
+| `grade_level(text) -> float` | function | Flesch–Kincaid grade level (higher = harder). |
+| `extract_actions(text) -> list[ActionItem]` | function | Pull action sentences and attach their deadlines. |
+| `find_dates(text) -> list[str]` | function | Every date-like string, in order, de-duplicated. |
+| `redact_pii(text) -> tuple[str, RedactionReport]` | function | Replace emails / phones / IDs / cards with typed placeholders. |
+| `StubBackend`, `GeminiBackend`, `AnthropicBackend`, `OllamaBackend` | classes | Rewrite backends. Stub is keyless and offline; the rest import their SDK lazily. |
+
+Any object with a `name` attribute and a `rewrite(text, *, reading_level, language) -> str`
+method satisfies the `Backend` protocol, so you can plug in your own.
+
 ## Tests
 
+The suite uses only the Python standard library (`unittest`) — no third-party
+test dependency and no API key. From a checkout:
+
 ```bash
-pip install -e ".[dev]"
-pytest
+python3 -m unittest discover -s tests
 ```
 
-The suite runs fully offline against the stub backend.
+It runs fully offline against the stub backend. CI runs the same command on
+Python 3.10–3.13 (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 ## License
 

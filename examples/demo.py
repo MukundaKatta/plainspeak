@@ -55,7 +55,9 @@ def main() -> None:
     print("PRIVACY")
     print("-" * 70)
     print(f"  backend:        {result.backend}")
-    print(f"  PII redacted:   {result.redactions} item(s) removed before any model call")
+    print(
+        f"  PII redacted:   {result.redactions} item(s) removed before any model call"
+    )
 
 
 if __name__ == "__main__":

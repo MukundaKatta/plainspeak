@@ -75,6 +75,30 @@ def test_redaction_can_be_disabled():
     assert result.redactions == 0
 
 
+def test_redaction_handles_grouped_card_numbers():
+    # Card numbers as printed on the card / on a bill: spaced or dashed.
+    for raw in ("4111 1111 1111 1111", "4111-1111-1111-1111"):
+        clean, report = redact_pii(f"Pay using card {raw} today.")
+        assert raw not in clean, f"grouped card {raw} leaked: {clean!r}"
+        assert "[CARD]" in clean
+        assert report.cards == 1
+        assert report.total == 1
+
+
+def test_redaction_handles_solid_card_number():
+    clean, report = redact_pii("Account 4111111111111111 on file.")
+    assert "4111111111111111" not in clean
+    assert report.cards == 1
+
+
+def test_redaction_leaves_dates_and_short_numbers_alone():
+    # A zip, a year, and an ISO date must not be mistaken for PII.
+    clean, report = redact_pii("On 2026-06-06, mail to ZIP 90210.")
+    assert report.total == 0
+    assert "2026-06-06" in clean
+    assert "90210" in clean
+
+
 # ---- backend + determinism -------------------------------------------------
 
 

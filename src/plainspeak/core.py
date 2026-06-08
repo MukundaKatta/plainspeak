@@ -63,7 +63,9 @@ _DATE_PATTERNS = [
     re.compile(rf"\b(?:{_MONTHS})\s+\d{{1,2}}(?:,?\s+\d{{4}})?", re.IGNORECASE),
     re.compile(r"\b\d{1,2}/\d{1,2}/\d{2,4}\b"),
     re.compile(r"\b\d{4}-\d{2}-\d{2}\b"),
-    re.compile(r"\bwithin\s+\d+\s+(?:days|weeks|months|business days)\b", re.IGNORECASE),
+    re.compile(
+        r"\bwithin\s+\d+\s+(?:days|weeks|months|business days)\b", re.IGNORECASE
+    ),
 ]
 
 _ACTION_CUES = (
@@ -115,7 +117,9 @@ def extract_actions(text: str) -> list[ActionItem]:
         low = sentence.lower()
         if any(cue in low for cue in _ACTION_CUES):
             dates = find_dates(sentence)
-            items.append(ActionItem(text=sentence.strip(), due=dates[0] if dates else None))
+            items.append(
+                ActionItem(text=sentence.strip(), due=dates[0] if dates else None)
+            )
     return items
 
 
@@ -198,7 +202,9 @@ class Simplifier:
         """Append one privacy-safe JSONL line. Never logs document text."""
         if not self.audit_path:
             return
-        os.makedirs(os.path.dirname(os.path.abspath(self.audit_path)) or ".", exist_ok=True)
+        os.makedirs(
+            os.path.dirname(os.path.abspath(self.audit_path)) or ".", exist_ok=True
+        )
         event = {
             "ts": round(time.time(), 3),
             "backend": result.backend,

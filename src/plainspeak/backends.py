@@ -78,7 +78,9 @@ class StubBackend:
 
     name = "stub"
 
-    def rewrite(self, text: str, *, reading_level: str = "grade-6", language: str = "en") -> str:
+    def rewrite(
+        self, text: str, *, reading_level: str = "grade-6", language: str = "en"
+    ) -> str:
         rewritten: list[str] = []
         for sentence in _split_sentences(text):
             simple = _simplify_sentence(sentence)
@@ -90,7 +92,9 @@ class StubBackend:
                         rewritten.append(clause[0].upper() + clause[1:])
             else:
                 rewritten.append(simple)
-        return " ".join(s if s.endswith((".", "!", "?")) else s + "." for s in rewritten)
+        return " ".join(
+            s if s.endswith((".", "!", "?")) else s + "." for s in rewritten
+        )
 
 
 _PROMPT = (
@@ -114,8 +118,12 @@ class GeminiBackend:
         self._client = genai.Client(api_key=api_key or os.environ["GEMINI_API_KEY"])
         self._model = model
 
-    def rewrite(self, text: str, *, reading_level: str = "grade-6", language: str = "en") -> str:
-        prompt = _PROMPT.format(language=language, reading_level=reading_level, text=text)
+    def rewrite(
+        self, text: str, *, reading_level: str = "grade-6", language: str = "en"
+    ) -> str:
+        prompt = _PROMPT.format(
+            language=language, reading_level=reading_level, text=text
+        )
         resp = self._client.models.generate_content(model=self._model, contents=prompt)
         return (resp.text or "").strip()
 
@@ -131,14 +139,20 @@ class AnthropicBackend:
         self._client = anthropic.Anthropic(api_key=api_key)
         self._model = model
 
-    def rewrite(self, text: str, *, reading_level: str = "grade-6", language: str = "en") -> str:
-        prompt = _PROMPT.format(language=language, reading_level=reading_level, text=text)
+    def rewrite(
+        self, text: str, *, reading_level: str = "grade-6", language: str = "en"
+    ) -> str:
+        prompt = _PROMPT.format(
+            language=language, reading_level=reading_level, text=text
+        )
         msg = self._client.messages.create(
             model=self._model,
             max_tokens=1024,
             messages=[{"role": "user", "content": prompt}],
         )
-        return "".join(block.text for block in msg.content if block.type == "text").strip()
+        return "".join(
+            block.text for block in msg.content if block.type == "text"
+        ).strip()
 
 
 class OllamaBackend:
@@ -150,10 +164,14 @@ class OllamaBackend:
         self._model = model
         self._host = host.rstrip("/")
 
-    def rewrite(self, text: str, *, reading_level: str = "grade-6", language: str = "en") -> str:
+    def rewrite(
+        self, text: str, *, reading_level: str = "grade-6", language: str = "en"
+    ) -> str:
         import httpx  # lazy import
 
-        prompt = _PROMPT.format(language=language, reading_level=reading_level, text=text)
+        prompt = _PROMPT.format(
+            language=language, reading_level=reading_level, text=text
+        )
         resp = httpx.post(
             f"{self._host}/api/generate",
             json={"model": self._model, "prompt": prompt, "stream": False},
